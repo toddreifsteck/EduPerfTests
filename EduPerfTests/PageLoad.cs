@@ -49,11 +49,12 @@ namespace EduPerfTests
 
             InitializeDriver(driver);
 
-            const int MaxRetries = 5;
-            int retries = 0;
+            const int MaxRetries = 20;
+            int retries = 0;            
             for (int i = 0; i < iterations; i++)
             {
                 string error = string.Empty;
+                bool failed = false;
                 long result = -1;
                 try
                 {
@@ -89,20 +90,10 @@ namespace EduPerfTests
                     long navStart = Convert.ToInt64(navStartObject);
                     result = loadEventEnd - navStart;
                 }
-                catch (TimeoutException e)
-                {
-                    error = e.Message;
-                    i = i - 1;
-                    retries++;
-                    if (retries > MaxRetries)
-                    {
-                        throw;
-                    }
-                }
                 catch (Exception e)
                 {
-                    error = e.Message;
-                    i = i - 1;
+                    error = e.ToString();
+                    failed = true;
                     retries++;
                     if (retries > MaxRetries)
                     {
@@ -112,6 +103,10 @@ namespace EduPerfTests
                 finally
                 {
                     _perfLog.WriteToLog($"{fullUrl},{browser},{result},{i + 1},{error}");
+                    if (failed)
+                    {
+                        i = i - 1;
+                    }
                 }
             }
         }
